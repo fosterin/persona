@@ -13,7 +13,7 @@ import { BaseModel, column } from '@adonisjs/lucid/orm'
 
 import { createDatabase, createTables, timeTravel } from '../helpers.js'
 import { EmailVerificationToken } from '../../src/email_verification/token.js'
-import { withEmailManagement } from '../../src/mixins/with_email_management.js'
+import { withEmailManagement } from '../../src/email_verification/mixins/with_email_management.js'
 
 test.group('With email management | createToken', () => {
   test('generate email verification token for the user', async ({ assert }) => {

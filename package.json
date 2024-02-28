@@ -10,12 +10,15 @@
     "build/src",
     "build/providers",
     "build/stubs",
+    "build/configure.d.ts",
+    "build/configure.js",
     "build/index.d.ts",
     "build/index.js"
   ],
   "exports": {
     ".": "./build/index.js",
-    "./types": "./build/src/types.js"
+    "./types": "./build/src/types.js",
+    "./email_verification": "./build/src/email_verification/main.js"
   },
   "scripts": {
     "clean": "del-cli build",

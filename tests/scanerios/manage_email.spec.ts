@@ -12,7 +12,7 @@ import { compose } from '@adonisjs/core/helpers'
 import { BaseModel, column } from '@adonisjs/lucid/orm'
 import { createDatabase, createTables } from '../helpers.js'
 import { EmailVerificationToken } from '../../src/email_verification/token.js'
-import { withEmailManagement } from '../../src/mixins/with_email_management.js'
+import { withEmailManagement } from '../../src/email_verification/mixins/with_email_management.js'
 
 class User extends compose(BaseModel, withEmailManagement()) {
   @column({ isPrimary: true })
