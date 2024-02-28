@@ -1,11 +1,12 @@
 {
-  "name": "@adonisjs/persona",
+  "name": "@fosterin/persona",
   "description": "Persona supercharges the AdonisJS authentication process",
   "version": "0.0.0",
   "engines": {
     "node": ">=18.16.0"
   },
   "type": "module",
+  "main": "build/index.js",
   "files": [
     "build/src",
     "build/providers",
@@ -37,8 +38,17 @@
     "prepublishOnly": "npm run build"
   },
   "keywords": [],
-  "author": "",
-  "license": "MIT",
+  "author": "virk,fosterin",
+  "license": "SEE LICENSE IN LICENSE.md",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fosterin/persona.git"
+  },
+  "types": "./build/index.d.ts",
+  "bugs": {
+    "url": "https://github.com/fosterin/persona/issues"
+  },
+  "homepage": "https://github.com/fosterin/persona#readme",
   "devDependencies": {
     "@adonisjs/assembler": "^7.0.0",
     "@adonisjs/core": "^6.2.0",
