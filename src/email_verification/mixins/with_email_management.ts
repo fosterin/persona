@@ -1,7 +1,7 @@
 /*
- * @fosterin/persona
+ * @adonisjs/persona
  *
- * (C) Foster Studio
+ * (C) AdonisJS
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -9,12 +9,14 @@
 
 import { Secret } from '@adonisjs/core/helpers'
 import { BaseModel } from '@adonisjs/lucid/orm'
+import stringHelpers from '@adonisjs/core/helpers/string'
 import { RuntimeException } from '@adonisjs/core/exceptions'
 import type { NormalizeConstructor } from '@adonisjs/core/types/helpers'
 
 import { E_INVALID_EMAIL_TOKEN } from '../../errors.js'
 import { EmailTokensProvider } from '../provider.js'
 import { EmailVerificationToken } from '../token.js'
+import { LucidModel } from '@adonisjs/lucid/types/model'
 
 /**
  * A Lucid mixin to properly manage emails on a model. The mixin
@@ -35,44 +37,62 @@ export function withEmailManagement() {
        * Verifies the user email address by verifying the
        * token
        */
-      static async verifyEmail(tokenValue: string) {
+      static async verifyEmail<TokenableModel extends typeof UserWithEmailManagement>(
+        this: TokenableModel,
+        tokenValue: string
+      ): Promise<InstanceType<TokenableModel>> {
         const token = await this.emailVerificationTokens.verify(new Secret(tokenValue))
         if (!token) {
           throw new E_INVALID_EMAIL_TOKEN()
         }
 
-        /**
-         * Check if any other user is using the provided
-         * email as the primary email on their account.
-         *
-         * If yes, we cannot overwrite their email address.
-         */
-        const otherUserWithSameEmail = await this.query()
-          .where('email', token.email)
-          .whereNot(this.primaryKey, String(token.tokenableId))
-          .first()
+        const transaction = await this.transaction()
 
-        if (otherUserWithSameEmail) {
-          throw new E_INVALID_EMAIL_TOKEN()
+        try {
+          /**
+           * Check if any other user is using the provided
+           * email as the primary email on their account.
+           *
+           * If yes, we cannot overwrite their email address.
+           */
+          const otherUserWithSameEmail = await this.query({
+            client: transaction,
+          })
+            .where('email', token.email)
+            .whereNot(this.primaryKey, String(token.tokenableId))
+            .first()
+
+          if (otherUserWithSameEmail) {
+            throw new E_INVALID_EMAIL_TOKEN()
+          }
+
+          /**
+           * Find the user for whom the token the created. Also,
+           * the email address for which the token was generated.
+           */
+          const user = await this.query({
+            client: transaction,
+          })
+            .where(this.primaryKey, String(token.tokenableId))
+            .where('unverifiedEmail', token.email)
+            .forUpdate()
+            .first()
+
+          if (!user) {
+            throw new E_INVALID_EMAIL_TOKEN()
+          }
+
+          /**
+           * Update user email address
+           */
+          await user.switchEmail(token.email).save()
+          await transaction.commit()
+          return user
+        } catch (error) {
+          await transaction.rollback()
+          Error.captureStackTrace(error)
+          throw error
         }
-
-        /**
-         * Find the user for whom the token the created. Also,
-         * the email address for which the token was generated.
-         */
-        const user = await this.query()
-          .where(this.primaryKey, String(token.tokenableId))
-          .where('unverifiedEmail', token.email)
-          .first()
-
-        if (!user) {
-          throw new E_INVALID_EMAIL_TOKEN()
-        }
-
-        /**
-         * Update user email address
-         */
-        await user.switchEmail(token.email).save()
       }
 
       /**
@@ -122,10 +142,14 @@ export function withEmailManagement() {
       /**
        * Creates an email verification token for the user
        */
-      createEmailVerificationToken(shouldThrottle: true): Promise<EmailVerificationToken | null>
+      createEmailVerificationToken(
+        shouldThrottle: true,
+        throttleDuration?: number | string
+      ): Promise<EmailVerificationToken | null>
       createEmailVerificationToken(shouldThrottle?: false): Promise<EmailVerificationToken>
       async createEmailVerificationToken(
-        shouldThrottle?: boolean
+        shouldThrottle?: boolean,
+        throttleDuration: number | string = 60
       ): Promise<EmailVerificationToken | null> {
         const model = this.constructor as typeof UserWithEmailManagement
         const self = this as InstanceType<typeof UserWithEmailManagement>
@@ -153,7 +177,9 @@ export function withEmailManagement() {
            */
           if (
             lastCreatedToken &&
-            lastCreatedToken.setSeconds(lastCreatedToken.getSeconds() + 60) > new Date().getTime()
+            lastCreatedToken.setSeconds(
+              lastCreatedToken.getSeconds() + stringHelpers.seconds.parse(throttleDuration)
+            ) > new Date().getTime()
           ) {
             return null
           }

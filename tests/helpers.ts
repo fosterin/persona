@@ -1,7 +1,7 @@
 /*
- * @fosterin/persona
+ * @adonisjs/persona
  *
- * (C) Foster Studio
+ * (C) AdonisJS
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -12,10 +12,12 @@ import timekeeper from 'timekeeper'
 import { mkdir } from 'node:fs/promises'
 import { getActiveTest } from '@japa/runner'
 import { Emitter } from '@adonisjs/core/events'
-import { BaseModel } from '@adonisjs/lucid/orm'
+import { compose, Secret } from '@adonisjs/core/helpers'
 import { Database } from '@adonisjs/lucid/database'
+import { BaseModel, column } from '@adonisjs/lucid/orm'
 import { AppFactory } from '@adonisjs/core/factories/app'
 import { LoggerFactory } from '@adonisjs/core/factories/logger'
+import { withEmailManagement } from '../src/email_verification/main.js'
 
 /**
  * Creates database connection for testing
@@ -163,4 +165,70 @@ export function timeTravel(secondsToTravel: number) {
   test.cleanup(() => {
     timekeeper.reset()
   })
+}
+
+/**
+ * Creates an encapsulated app with models and actions
+ */
+export function createApp() {
+  class User extends compose(BaseModel, withEmailManagement()) {
+    @column({ isPrimary: true })
+    declare id: number
+
+    @column()
+    declare username: string
+
+    @column()
+    declare password: string
+  }
+
+  /**
+   * The same logic will be used inside the starter kit
+   */
+  async function updateUserEmail(user: User, newEmail: string) {
+    return await user.lockForUpdate(async (freshUser) => {
+      if (!freshUser.hasEmailChanged(newEmail)) {
+        await freshUser.save()
+        return {
+          type: 'SKIPPED',
+        } as const
+      }
+
+      if (freshUser.hasEmailReverted(newEmail)) {
+        freshUser.email = newEmail
+        freshUser.unverifiedEmail = null
+        await freshUser.save()
+        await freshUser.clearEmailVerificationTokens()
+        return {
+          type: 'REVERTED',
+        } as const
+      }
+
+      await freshUser.withEmail(newEmail).save()
+      await freshUser.clearEmailVerificationTokens()
+      const freshToken = await freshUser.createEmailVerificationToken(false)
+      return {
+        type: 'ISSUED_TOKEN',
+        token: freshToken,
+      } as const
+    })
+  }
+
+  /**
+   * Verifies the email and clears all tokens
+   */
+  async function verifyEmail(token: string) {
+    const user = await User.verifyEmail(token)
+    await user.clearEmailVerificationTokens()
+  }
+
+  return {
+    models: {
+      User,
+    },
+    actions: {
+      updateUserEmail,
+      verifyEmail,
+    },
+  }
 }

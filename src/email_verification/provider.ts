@@ -1,7 +1,7 @@
 /*
- * @fosterin/persona
+ * @adonisjs/persona
  *
- * (C) Foster Studio
+ * (C) AdonisJS
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -109,7 +109,9 @@ export class EmailTokensProvider<TokenableModel extends LucidModel> {
   }
 
   /**
-   * Create a token for a user
+   * Create a token for a user.
+   *
+   * Inherits transaction from the user
    */
   async create(
     user: InstanceType<TokenableModel>,
@@ -176,12 +178,14 @@ export class EmailTokensProvider<TokenableModel extends LucidModel> {
 
   /**
    * Returns the timestamp for the last created token for a given
-   * user
+   * user.
+   *
+   * Inherits transaction from the user
    */
   async lastCreatedAt(user: InstanceType<TokenableModel>): Promise<null | Date> {
     this.#ensureIsPersisted(user)
 
-    const queryClient = await this.getDb()
+    const queryClient = user.$trx || (await this.getDb())
     const dbRow = await queryClient
       .query<EmailTokenDbColumns>()
       .from(this.table)
@@ -199,11 +203,13 @@ export class EmailTokensProvider<TokenableModel extends LucidModel> {
 
   /**
    * Find a token for a user by the token id
+   *
+   * Inherits transaction from the user
    */
   async find(user: InstanceType<TokenableModel>, identifier: string | number | BigInt) {
     this.#ensureIsPersisted(user)
 
-    const queryClient = await this.getDb()
+    const queryClient = user.$trx || (await this.getDb())
     const dbRow = await queryClient
       .query<EmailTokenDbColumns>()
       .from(this.table)
@@ -220,6 +226,8 @@ export class EmailTokensProvider<TokenableModel extends LucidModel> {
 
   /**
    * Delete a token by its id
+   *
+   * Inherits transaction from the user
    */
   async delete(
     user: InstanceType<TokenableModel>,
@@ -239,7 +247,9 @@ export class EmailTokensProvider<TokenableModel extends LucidModel> {
   }
 
   /**
-   * Delete all tokens for a given user
+   * Delete all tokens for a given user.
+   *
+   * Inherits transaction from the user
    */
   async deleteAll(user: InstanceType<TokenableModel>): Promise<number> {
     this.#ensureIsPersisted(user)
@@ -256,12 +266,14 @@ export class EmailTokensProvider<TokenableModel extends LucidModel> {
   }
 
   /**
-   * Returns all the tokens for a given user
+   * Returns all the tokens for a given user.
+   *
+   * Inherits transaction from the user
    */
   async all(user: InstanceType<TokenableModel>) {
     this.#ensureIsPersisted(user)
 
-    const queryClient = await this.getDb()
+    const queryClient = user.$trx || (await this.getDb())
     const dbRows = await queryClient
       .query<EmailTokenDbColumns>()
       .from(this.table)

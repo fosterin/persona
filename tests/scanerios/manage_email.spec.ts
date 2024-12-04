@@ -8,54 +8,10 @@
  */
 
 import { test } from '@japa/runner'
-import { compose } from '@adonisjs/core/helpers'
-import { BaseModel, column } from '@adonisjs/lucid/orm'
-import { createDatabase, createTables } from '../helpers.js'
+import { createApp, createDatabase, createTables } from '../helpers.js'
 import { EmailVerificationToken } from '../../src/email_verification/token.js'
-import { withEmailManagement } from '../../src/email_verification/mixins/with_email_management.js'
 
-class User extends compose(BaseModel, withEmailManagement()) {
-  @column({ isPrimary: true })
-  declare id: number
-
-  @column()
-  declare username: string
-
-  @column()
-  declare password: string
-}
-
-/**
- * The same logic will be used inside the starter kit
- */
-async function updateUser(user: User, newEmail: string) {
-  return await user.lockForUpdate(async (freshUser) => {
-    if (!freshUser.hasEmailChanged(newEmail)) {
-      await freshUser.save()
-      return {
-        type: 'SKIPPED',
-      } as const
-    }
-
-    if (freshUser.hasEmailReverted(newEmail)) {
-      freshUser.email = newEmail
-      freshUser.unverifiedEmail = null
-      await freshUser.clearEmailVerificationTokens()
-      await freshUser.save()
-      return {
-        type: 'REVERTED',
-      } as const
-    }
-
-    await freshUser.withEmail(newEmail).save()
-    await freshUser.clearEmailVerificationTokens()
-    const freshToken = await freshUser.createEmailVerificationToken(false)
-    return {
-      type: 'ISSUED_TOKEN',
-      token: freshToken,
-    } as const
-  })
-}
+const { models, actions } = createApp()
 
 test.group('Manage email | createUser', () => {
   test('create new user with an unverified email address', async ({ assert }) => {
@@ -63,7 +19,7 @@ test.group('Manage email | createUser', () => {
     await createTables(db)
 
     const { token, user } = await db.transaction(async (trx) => {
-      const newUser = await User.create(
+      const newUser = await models.User.create(
         {
           username: 'virk',
           email: 'virk@adonisjs.com',
@@ -86,7 +42,7 @@ test.group('Manage email | createUser', () => {
     const db = await createDatabase()
     await createTables(db)
 
-    await User.create({
+    await models.User.create({
       username: 'virk',
       email: 'virk@adonisjs.com',
       unverifiedEmail: 'virk@adonisjs.com',
@@ -95,7 +51,7 @@ test.group('Manage email | createUser', () => {
 
     assert.rejects(() =>
       db.transaction(async (trx) => {
-        const newUser = await User.create(
+        await models.User.create(
           {
             username: 'virk',
             email: 'virk@adonisjs.com',
@@ -104,20 +60,17 @@ test.group('Manage email | createUser', () => {
           },
           { client: trx }
         )
-
-        const newToken = await newUser.createEmailVerificationToken()
-        return { token: newToken, user: newUser }
       })
     )
   })
 })
 
-test.group('Manage email | updateUser', () => {
+test.group('Manage email | updateEmail', () => {
   test('update both primary and unverified email for a new user account', async ({ assert }) => {
     const db = await createDatabase()
     await createTables(db)
 
-    const user = await User.create({
+    const user = await models.User.create({
       username: 'virk',
       email: 'virk@adonisjs.com',
       unverifiedEmail: 'virk@adonisjs.com',
@@ -125,7 +78,7 @@ test.group('Manage email | updateUser', () => {
     })
 
     const newEmail = 'foo@bar.com'
-    const response = await updateUser(user, newEmail)
+    const response = await actions.updateUserEmail(user, newEmail)
     assert.equal(response.type, 'ISSUED_TOKEN')
     assert.instanceOf(response.token, EmailVerificationToken)
 
@@ -138,7 +91,7 @@ test.group('Manage email | updateUser', () => {
     const db = await createDatabase()
     await createTables(db)
 
-    const user = await User.create({
+    const user = await models.User.create({
       username: 'virk',
       email: 'virk@adonisjs.com',
       unverifiedEmail: 'virk@adonisjs.com',
@@ -146,7 +99,7 @@ test.group('Manage email | updateUser', () => {
     })
 
     const newEmail = 'virk@adonisjs.com'
-    const response = await updateUser(user, newEmail)
+    const response = await actions.updateUserEmail(user, newEmail)
     assert.equal(response.type, 'SKIPPED')
 
     await user.refresh()
@@ -155,11 +108,11 @@ test.group('Manage email | updateUser', () => {
     assert.equal(user.unverifiedEmail, newEmail)
   })
 
-  test('noop when email unverified email has not changed', async ({ assert }) => {
+  test('noop when unverified has not been changed', async ({ assert }) => {
     const db = await createDatabase()
     await createTables(db)
 
-    const user = await User.create({
+    const user = await models.User.create({
       username: 'virk',
       email: 'virk@adonisjs.com',
       unverifiedEmail: 'foo@bar.com',
@@ -167,7 +120,28 @@ test.group('Manage email | updateUser', () => {
     })
 
     const newEmail = 'foo@bar.com'
-    const response = await updateUser(user, newEmail)
+    const response = await actions.updateUserEmail(user, newEmail)
+    assert.equal(response.type, 'SKIPPED')
+
+    await user.refresh()
+
+    assert.equal(user.email, 'virk@adonisjs.com')
+    assert.equal(user.unverifiedEmail, newEmail)
+  })
+
+  test('noop when email unverified email has not changed', async ({ assert }) => {
+    const db = await createDatabase()
+    await createTables(db)
+
+    const user = await models.User.create({
+      username: 'virk',
+      email: 'virk@adonisjs.com',
+      unverifiedEmail: 'foo@bar.com',
+      password: 'secret',
+    })
+
+    const newEmail = 'foo@bar.com'
+    const response = await actions.updateUserEmail(user, newEmail)
     assert.equal(response.type, 'SKIPPED')
 
     await user.refresh()
@@ -180,7 +154,7 @@ test.group('Manage email | updateUser', () => {
     const db = await createDatabase()
     await createTables(db)
 
-    const user = await User.create({
+    const user = await models.User.create({
       username: 'virk',
       email: 'virk@adonisjs.com',
       unverifiedEmail: 'foo@bar.com',
@@ -188,7 +162,7 @@ test.group('Manage email | updateUser', () => {
     })
 
     const newEmail = 'virk@adonisjs.com'
-    const response = await updateUser(user, newEmail)
+    const response = await actions.updateUserEmail(user, newEmail)
     assert.equal(response.type, 'REVERTED')
 
     await user.refresh()
@@ -198,44 +172,182 @@ test.group('Manage email | updateUser', () => {
   })
 
   /**
-   * We can claim another user's primary email, because
-   * the new email is added to the "unverified_email"
-   * column which does not have a unique constraint.
+   * We can claim another user's primary email, because the new
+   * email is added to the "unverified_email" column which
+   * does not have a unique constraint.
    *
-   * Yes, we can check for primary emails before doing the
-   * update. But that does not protect from situations where
-   * a primary email gets added to the table afterwards.
+   * Yes, we can check for primary emails before doing the update.
+   * But that does not protect from situations where a primary
+   * email gets added to the table afterwards.
    *
-   * In short, we can have duplicate emails inside the
-   * "unverified_email" column and there is no direct way to prevent
-   * that.
+   * In short, we can have duplicate emails inside the "unverified_email"
+   * column and there is no simple way to prevent that.
    *
-   * However, during verification, the claim to make unverified_email
-   * an primary email will fail because of the unique constraint.
+   * However, during verification, the claim to make "unverified_email"
+   * a primary email will fail because of the unique constraint.
+   *
+   * In that case, a new account can sit on an unverified email for
+   * very long and therefore one must delete inactive signups from
+   * the user's table.
+   *
+   * Github is also prone to this even at a higher level that they lock
+   * secondary unverified emails to be used for new signups.
+   * https://github.com/orgs/community/discussions/23521
    */
   test('claim another user primary email as unverified email', async ({ assert }) => {
     const db = await createDatabase()
     await createTables(db)
 
-    const user = await User.create({
+    const user = await models.User.create({
       username: 'virk',
       email: 'virk@adonisjs.com',
       unverifiedEmail: 'foo@bar.com',
       password: 'secret',
     })
-    await User.create({
+    await models.User.create({
       username: 'romain',
       email: 'romain@adonisjs.com',
       password: 'secret',
     })
 
     const newEmail = 'romain@adonisjs.com'
-    const response = await updateUser(user, newEmail)
+    const response = await actions.updateUserEmail(user, newEmail)
     assert.equal(response.type, 'ISSUED_TOKEN')
     assert.instanceOf(response.token, EmailVerificationToken)
 
     await user.refresh()
     assert.equal(user.email, 'virk@adonisjs.com')
     assert.equal(user.unverifiedEmail, newEmail)
+  })
+
+  test('delete verification tokens when email is reverted back', async ({ assert }) => {
+    const db = await createDatabase()
+    await createTables(db)
+
+    const user = await models.User.create({
+      username: 'virk',
+      email: 'virk@adonisjs.com',
+      unverifiedEmail: null,
+      password: 'secret',
+    })
+
+    /**
+     * Issued a new token but never verified the email
+     */
+    const issueTokenResponse = await actions.updateUserEmail(user, 'foo@bar.com')
+    assert.equal(issueTokenResponse.type, 'ISSUED_TOKEN')
+
+    await user.refresh()
+    assert.equal(user.email, 'virk@adonisjs.com')
+    assert.equal(user.unverifiedEmail, 'foo@bar.com')
+
+    assert.lengthOf(await models.User.emailVerificationTokens.all(user), 1)
+
+    /**
+     * Reverted back to original verified email
+     */
+    const revertResponse = await actions.updateUserEmail(user, 'virk@adonisjs.com')
+    assert.equal(revertResponse.type, 'REVERTED')
+
+    await user.refresh()
+    assert.equal(user.email, 'virk@adonisjs.com')
+    assert.isNull(user.unverifiedEmail)
+
+    assert.lengthOf(await models.User.emailVerificationTokens.all(user), 0)
+  })
+
+  test('re-issue token for every email switch', async ({ assert }) => {
+    const db = await createDatabase()
+    await createTables(db)
+
+    const user = await models.User.create({
+      username: 'virk',
+      email: 'virk@adonisjs.com',
+      unverifiedEmail: null,
+      password: 'secret',
+    })
+
+    /**
+     * Issued a new token but never verified the email
+     */
+    const issueTokenResponse = await actions.updateUserEmail(user, 'foo@bar.com')
+    assert.equal(issueTokenResponse.type, 'ISSUED_TOKEN')
+
+    await user.refresh()
+    assert.equal(user.email, 'virk@adonisjs.com')
+    assert.equal(user.unverifiedEmail, 'foo@bar.com')
+
+    const firstToken = await models.User.emailVerificationTokens.find(
+      user,
+      issueTokenResponse.token!.identifier
+    )
+
+    /**
+     * Switched email again
+     */
+    const issueTokenResponse2 = await actions.updateUserEmail(user, 'bar@baz.com')
+    assert.equal(issueTokenResponse2.type, 'ISSUED_TOKEN')
+
+    await user.refresh()
+    assert.equal(user.email, 'virk@adonisjs.com')
+    assert.equal(user.unverifiedEmail, 'bar@baz.com')
+
+    const secondToken = await models.User.emailVerificationTokens.find(
+      user,
+      issueTokenResponse2.token!.identifier
+    )
+
+    assert.notEqual(secondToken!.hash, firstToken!.hash)
+    assert.notEqual(secondToken!.email, firstToken!.email)
+    assert.equal(secondToken!.tokenableId, firstToken!.tokenableId)
+
+    /**
+     * Only one token is kept within the database
+     */
+    assert.lengthOf(await models.User.emailVerificationTokens.all(user), 1)
+  })
+})
+
+test.group('Manage email | regenerate verification token', () => {
+  test('re-generate tokens', async ({ assert }) => {
+    const db = await createDatabase()
+    await createTables(db)
+
+    const user = await models.User.create({
+      username: 'virk',
+      email: 'virk@adonisjs.com',
+      unverifiedEmail: 'foo@bar.com',
+      password: 'secret',
+    })
+
+    const firstToken = await user.createEmailVerificationToken()
+    const secondToken = await user.createEmailVerificationToken()
+    const thirdToken = await user.createEmailVerificationToken()
+
+    assert.notEqual(firstToken.identifier, secondToken.identifier)
+    assert.notEqual(firstToken.identifier, thirdToken.identifier)
+    assert.lengthOf(await models.User.emailVerificationTokens.all(user), 3)
+  })
+
+  test('do not re-generate tokens within throttle window', async ({ assert }) => {
+    const db = await createDatabase()
+    await createTables(db)
+
+    const user = await models.User.create({
+      username: 'virk',
+      email: 'virk@adonisjs.com',
+      unverifiedEmail: 'foo@bar.com',
+      password: 'secret',
+    })
+
+    const firstToken = await user.createEmailVerificationToken(true, '1min')
+    const secondToken = await user.createEmailVerificationToken(true, '1min')
+    const thirdToken = await user.createEmailVerificationToken(true, '1min')
+
+    assert.isNotNull(firstToken)
+    assert.isNull(secondToken)
+    assert.isNull(thirdToken)
+
+    assert.lengthOf(await models.User.emailVerificationTokens.all(user), 1)
   })
 })
