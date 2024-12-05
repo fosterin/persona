@@ -13,7 +13,7 @@ import stringHelpers from '@adonisjs/core/helpers/string'
 import { RuntimeException } from '@adonisjs/core/exceptions'
 import type { LucidModel } from '@adonisjs/lucid/types/model'
 
-import { EmailVerificationToken } from './token.js'
+import { EmailVerificationToken } from './email_verification_token.js'
 import type { EmailTokenDbColumns, EmailTokensProviderOptions } from '../types.js'
 
 /**

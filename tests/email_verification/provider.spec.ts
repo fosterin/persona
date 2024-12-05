@@ -13,7 +13,7 @@ import { setTimeout } from 'node:timers/promises'
 import { BaseModel, column } from '@adonisjs/lucid/orm'
 
 import { createDatabase, createTables, timeTravel } from '../helpers.js'
-import { EmailVerificationToken } from '../../src/email_verification/token.js'
+import { EmailVerificationToken } from '../../src/email_verification/email_verification_token.js'
 import { EmailTokensProvider } from '../../src/email_verification/provider.js'
 
 test.group('Email tokens | create', () => {

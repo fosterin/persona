@@ -1,7 +1,7 @@
 /*
- * @fosterin/persona
+ * @adonisjs/persona
  *
- * (C) Foster Studio
+ * (C) AdonisJS
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -9,7 +9,7 @@
 
 import { test } from '@japa/runner'
 import { createApp, createDatabase, createTables } from '../helpers.js'
-import { EmailVerificationToken } from '../../src/email_verification/token.js'
+import { EmailVerificationToken } from '../../src/email_verification/email_verification_token.js'
 
 const { models, actions } = createApp()
 

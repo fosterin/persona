@@ -7,6 +7,6 @@
  * file that was distributed with this source code.
  */
 
-export { EmailVerificationToken } from './token.js'
 export { EmailTokensProvider } from './provider.js'
+export { EmailVerificationToken } from './email_verification_token.js'
 export { withEmailManagement } from './mixins/with_email_management.js'
