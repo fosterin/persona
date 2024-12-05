@@ -1,7 +1,7 @@
 {
   "name": "@fosterin/persona",
   "description": "Persona supercharges the AdonisJS authentication process",
-  "version": "0.0.1-0",
+  "version": "0.1.0",
   "engines": {
     "node": ">=18.16.0"
   },
