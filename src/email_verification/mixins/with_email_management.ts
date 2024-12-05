@@ -16,7 +16,6 @@ import type { NormalizeConstructor } from '@adonisjs/core/types/helpers'
 import { E_INVALID_EMAIL_TOKEN } from '../../errors.js'
 import { EmailTokensProvider } from '../provider.js'
 import { EmailVerificationToken } from '../token.js'
-import { LucidModel } from '@adonisjs/lucid/types/model'
 
 /**
  * A Lucid mixin to properly manage emails on a model. The mixin
