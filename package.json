@@ -50,7 +50,7 @@
   "homepage": "https://github.com/fosterin/persona#readme",
   "devDependencies": {
     "@adonisjs/assembler": "^7.8.2",
-    "@adonisjs/core": "^6.15.2",
+    "@adonisjs/core": "^6.16.0",
     "@adonisjs/eslint-config": "^2.0.0-beta.7",
     "@adonisjs/lucid": "^21.5.0",
     "@adonisjs/prettier-config": "^1.4.0",
