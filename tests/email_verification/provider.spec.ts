@@ -13,8 +13,8 @@ import { setTimeout } from 'node:timers/promises'
 import { BaseModel, column } from '@adonisjs/lucid/orm'
 
 import { createDatabase, createTables, timeTravel } from '../helpers.js'
-import { EmailVerificationToken } from '../../src/email_verification/email_verification_token.js'
-import { EmailTokensProvider } from '../../src/email_verification/provider.js'
+import { EmailVerificationToken } from '../../src/email_management/email_verification_token.js'
+import { DbEmailTokensProvider } from '../../src/email_management/token_providers/db.js'
 
 test.group('Email tokens | create', () => {
   test('create token for a user', async ({ assert }) => {
@@ -34,7 +34,7 @@ test.group('Email tokens | create', () => {
       @column()
       declare password: string
 
-      static emailVerificationTokens = EmailTokensProvider.forModel(User)
+      static emailVerificationTokens = DbEmailTokensProvider.forModel(User)
     }
 
     const user = await User.create({
@@ -76,7 +76,7 @@ test.group('Email tokens | create', () => {
       @column()
       declare password: string
 
-      static emailVerificationTokens = EmailTokensProvider.forModel(User)
+      static emailVerificationTokens = DbEmailTokensProvider.forModel(User)
     }
 
     const user = new User()
@@ -103,7 +103,7 @@ test.group('Email tokens | create', () => {
       @column()
       declare password: string
 
-      static emailVerificationTokens = EmailTokensProvider.forModel(User)
+      static emailVerificationTokens = DbEmailTokensProvider.forModel(User)
     }
 
     await assert.rejects(
@@ -132,7 +132,7 @@ test.group('Email tokens | verify', () => {
       @column()
       declare password: string
 
-      static emailVerificationTokens = EmailTokensProvider.forModel(User)
+      static emailVerificationTokens = DbEmailTokensProvider.forModel(User)
     }
 
     const user = await User.create({
@@ -169,7 +169,7 @@ test.group('Email tokens | verify', () => {
       @column()
       declare password: string
 
-      static emailVerificationTokens = EmailTokensProvider.forModel(User)
+      static emailVerificationTokens = DbEmailTokensProvider.forModel(User)
     }
 
     const user = await User.create({
@@ -204,7 +204,7 @@ test.group('Email tokens | verify', () => {
       @column()
       declare password: string
 
-      static emailVerificationTokens = EmailTokensProvider.forModel(User)
+      static emailVerificationTokens = DbEmailTokensProvider.forModel(User)
     }
 
     const user = await User.create({
@@ -237,7 +237,7 @@ test.group('Email tokens | verify', () => {
       @column()
       declare password: string
 
-      static emailVerificationTokens = EmailTokensProvider.forModel(User)
+      static emailVerificationTokens = DbEmailTokensProvider.forModel(User)
     }
 
     const freshToken = await User.emailVerificationTokens.verify(new Secret('foo.bar'))
@@ -261,7 +261,7 @@ test.group('Email tokens | verify', () => {
       @column()
       declare password: string
 
-      static emailVerificationTokens = EmailTokensProvider.forModel(User)
+      static emailVerificationTokens = DbEmailTokensProvider.forModel(User)
     }
 
     const user = await User.create({
@@ -297,7 +297,7 @@ test.group('Email tokens | find', () => {
       @column()
       declare password: string
 
-      static emailVerificationTokens = EmailTokensProvider.forModel(User)
+      static emailVerificationTokens = DbEmailTokensProvider.forModel(User)
     }
 
     const user = await User.create({
@@ -335,7 +335,7 @@ test.group('Email tokens | find', () => {
       @column()
       declare password: string
 
-      static emailVerificationTokens = EmailTokensProvider.forModel(User)
+      static emailVerificationTokens = DbEmailTokensProvider.forModel(User)
     }
 
     const user = await User.create({
@@ -378,7 +378,7 @@ test.group('Email tokens | find', () => {
       @column()
       declare password: string
 
-      static emailVerificationTokens = EmailTokensProvider.forModel(User)
+      static emailVerificationTokens = DbEmailTokensProvider.forModel(User)
     }
 
     const user = await User.create({
@@ -410,7 +410,7 @@ test.group('Email tokens | all', () => {
       @column()
       declare password: string
 
-      static emailVerificationTokens = EmailTokensProvider.forModel(User)
+      static emailVerificationTokens = DbEmailTokensProvider.forModel(User)
     }
 
     const user = await User.create({
@@ -466,7 +466,7 @@ test.group('Email tokens | deleteAll', () => {
       @column()
       declare password: string
 
-      static emailVerificationTokens = EmailTokensProvider.forModel(User)
+      static emailVerificationTokens = DbEmailTokensProvider.forModel(User)
     }
 
     const user = await User.create({
@@ -508,7 +508,7 @@ test.group('Email tokens | lastCreatedAt', () => {
       @column()
       declare password: string
 
-      static emailVerificationTokens = EmailTokensProvider.forModel(User)
+      static emailVerificationTokens = DbEmailTokensProvider.forModel(User)
     }
 
     const user = await User.create({

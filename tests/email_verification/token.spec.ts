@@ -11,7 +11,7 @@ import { test } from '@japa/runner'
 import { Secret, base64 } from '@poppinss/utils'
 
 import { freezeTime } from '../helpers.js'
-import { EmailVerificationToken } from '../../src/email_verification/email_verification_token.js'
+import { EmailVerificationToken } from '../../src/email_management/email_verification_token.js'
 
 test.group('EmailVerificationToken token | decode', () => {
   test('decode "{input}" as token')

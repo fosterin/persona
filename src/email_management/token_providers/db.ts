@@ -13,15 +13,15 @@ import stringHelpers from '@adonisjs/core/helpers/string'
 import { RuntimeException } from '@adonisjs/core/exceptions'
 import type { LucidModel } from '@adonisjs/lucid/types/model'
 
-import { EmailVerificationToken } from './email_verification_token.js'
-import type { EmailTokenDbColumns, EmailTokensProviderOptions } from '../types.js'
+import { EmailVerificationToken } from '../email_verification_token.js'
+import type { EmailTokenDbColumns, EmailTokensProviderOptions } from '../../types.js'
 
 /**
- * The EmailTokensProvider uses Lucid to persist verification
+ * The DbEmailTokensProvider uses Lucid to persist verification
  * tokens inside a database table. Later these tokens can
  * be used for verification.
  */
-export class EmailTokensProvider<TokenableModel extends LucidModel> {
+export class DbEmailTokensProvider<TokenableModel extends LucidModel> {
   /**
    * Create tokens provider instance for a given Lucid model
    */
@@ -29,7 +29,7 @@ export class EmailTokensProvider<TokenableModel extends LucidModel> {
     model: EmailTokensProviderOptions<TokenableModel>['tokenableModel'],
     options?: Omit<EmailTokensProviderOptions<TokenableModel>, 'tokenableModel'>
   ) {
-    return new EmailTokensProvider<TokenableModel>({
+    return new DbEmailTokensProvider<TokenableModel>({
       tokenableModel: model,
       ...(options || {}),
     })

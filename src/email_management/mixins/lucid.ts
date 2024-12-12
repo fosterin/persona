@@ -13,8 +13,8 @@ import stringHelpers from '@adonisjs/core/helpers/string'
 import { RuntimeException } from '@adonisjs/core/exceptions'
 import type { NormalizeConstructor } from '@adonisjs/core/types/helpers'
 
-import { EmailTokensProvider } from '../provider.js'
 import { E_INVALID_EMAIL_TOKEN } from '../../errors.js'
+import { DbEmailTokensProvider } from '../token_providers/db.js'
 import { EmailVerificationToken } from '../email_verification_token.js'
 
 /**
@@ -30,7 +30,7 @@ export function withEmailManagement() {
        * The tokens provider to use for creating and verifying email
        * tokens
        */
-      declare static emailVerificationTokens: EmailTokensProvider<typeof UserWithManagedEmails>
+      declare static emailVerificationTokens: DbEmailTokensProvider<typeof UserWithManagedEmails>
 
       /**
        * Verifies the user email address by verifying the
@@ -123,7 +123,7 @@ export function withEmailManagement() {
          */
         this.$defineProperty(
           'emailVerificationTokens',
-          EmailTokensProvider.forModel(this, {}) as any,
+          DbEmailTokensProvider.forModel(this, {}) as any,
           'define'
         )
       }

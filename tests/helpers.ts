@@ -17,7 +17,7 @@ import { Database } from '@adonisjs/lucid/database'
 import { BaseModel, column } from '@adonisjs/lucid/orm'
 import { AppFactory } from '@adonisjs/core/factories/app'
 import { LoggerFactory } from '@adonisjs/core/factories/logger'
-import { withEmailManagement } from '../src/email_verification/main.js'
+import { withEmailManagement } from '../src/email_management/main.js'
 
 /**
  * Creates database connection for testing
