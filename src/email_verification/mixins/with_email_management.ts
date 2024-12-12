@@ -13,8 +13,8 @@ import stringHelpers from '@adonisjs/core/helpers/string'
 import { RuntimeException } from '@adonisjs/core/exceptions'
 import type { NormalizeConstructor } from '@adonisjs/core/types/helpers'
 
-import { E_INVALID_EMAIL_TOKEN } from '../../errors.js'
 import { EmailTokensProvider } from '../provider.js'
+import { E_INVALID_EMAIL_TOKEN } from '../../errors.js'
 import { EmailVerificationToken } from '../email_verification_token.js'
 
 /**
@@ -98,6 +98,11 @@ export function withEmailManagement() {
        * Boots the model
        */
       static boot() {
+        if (!this.hasOwnProperty('booted')) {
+          // @ts-expect-error
+          this.booted = false
+        }
+
         if (this.booted === true) {
           return
         }
