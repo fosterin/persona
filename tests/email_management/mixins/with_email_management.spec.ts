@@ -1,7 +1,7 @@
 /*
- * @fosterin/persona
+ * @adonisjs/persona
  *
- * (C) Foster Studio
+ * (C) AdonisJS
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -12,8 +12,8 @@ import { compose } from '@adonisjs/core/helpers'
 import { BaseModel, column } from '@adonisjs/lucid/orm'
 
 import { createDatabase, createTables, timeTravel } from '../../helpers.js'
-import { EmailVerificationToken } from '../../../src/email_management/email_verification_token.js'
 import { withEmailManagement } from '../../../src/email_management/mixins/lucid.js'
+import { EmailVerificationToken } from '../../../src/email_management/email_verification_token.js'
 
 test.group('With email management | createToken', () => {
   test('generate email verification token for the user', async ({ assert }) => {

@@ -18,6 +18,7 @@ import { BaseModel, column } from '@adonisjs/lucid/orm'
 import { AppFactory } from '@adonisjs/core/factories/app'
 import { LoggerFactory } from '@adonisjs/core/factories/logger'
 import { withEmailManagement } from '../src/email_management/main.js'
+import { withPasswordManagement } from '../src/password_management/main.js'
 
 /**
  * Creates database connection for testing
@@ -171,15 +172,12 @@ export function timeTravel(secondsToTravel: number) {
  * Creates an encapsulated app with models and actions
  */
 export function createApp() {
-  class User extends compose(BaseModel, withEmailManagement()) {
+  class User extends compose(BaseModel, withEmailManagement(), withPasswordManagement()) {
     @column({ isPrimary: true })
     declare id: number
 
     @column()
     declare username: string
-
-    @column()
-    declare password: string
   }
 
   /**
@@ -222,6 +220,14 @@ export function createApp() {
     await user.clearEmailVerificationTokens()
   }
 
+  /**
+   * Verifies the email and clears all tokens
+   */
+  async function resetPassword(token: string, newPassword: string) {
+    const user = await User.resetPassword(token, newPassword)
+    await user.clearPasswordResetTokens()
+  }
+
   return {
     models: {
       User,
@@ -229,6 +235,7 @@ export function createApp() {
     actions: {
       updateUserEmail,
       verifyEmail,
+      resetPassword,
     },
   }
 }

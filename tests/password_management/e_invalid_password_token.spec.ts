@@ -12,12 +12,12 @@ import { I18nManagerFactory } from '@adonisjs/i18n/factories'
 import { HttpContextFactory } from '@adonisjs/core/factories/http'
 import { SessionMiddlewareFactory } from '@adonisjs/session/factories'
 
-import { E_INVALID_EMAIL_TOKEN } from '../../src/email_management/errors.js'
+import { E_INVALID_PASSWORD_TOKEN } from '../../src/password_management/errors.js'
 
-test.group('Errors | E_INVALID_EMAIL_TOKEN', () => {
+test.group('Errors | E_INVALID_PASSWORD_TOKEN', () => {
   test('report error via flash messages and redirect', async ({ assert }) => {
     const sessionMiddleware = await new SessionMiddlewareFactory().create()
-    const error = new E_INVALID_EMAIL_TOKEN()
+    const error = new E_INVALID_PASSWORD_TOKEN()
 
     const ctx = new HttpContextFactory().create()
     await sessionMiddleware.handle(ctx, async () => {
@@ -25,7 +25,7 @@ test.group('Errors | E_INVALID_EMAIL_TOKEN', () => {
     })
 
     assert.deepEqual(ctx.session.responseFlashMessages.all(), {
-      email_verification_error: 'Invalid or expired email verification token',
+      email_verification_error: 'Invalid or expired password reset token',
     })
     assert.equal(ctx.response.getHeader('location'), '/')
   })
@@ -33,17 +33,17 @@ test.group('Errors | E_INVALID_EMAIL_TOKEN', () => {
   test('respond with text message when session middleware is not configured', async ({
     assert,
   }) => {
-    const error = new E_INVALID_EMAIL_TOKEN()
+    const error = new E_INVALID_PASSWORD_TOKEN()
 
     const ctx = new HttpContextFactory().create()
     await error.handle(error, ctx)
 
     assert.isUndefined(ctx.response.getHeader('location'))
-    assert.deepEqual(ctx.response.getBody(), 'Invalid or expired email verification token')
+    assert.deepEqual(ctx.response.getBody(), 'Invalid or expired password reset token')
   })
 
   test('respond with json', async ({ assert }) => {
-    const error = new E_INVALID_EMAIL_TOKEN()
+    const error = new E_INVALID_PASSWORD_TOKEN()
     const ctx = new HttpContextFactory().create()
 
     /**
@@ -56,14 +56,14 @@ test.group('Errors | E_INVALID_EMAIL_TOKEN', () => {
     assert.deepEqual(ctx.response.getBody(), {
       errors: [
         {
-          message: 'Invalid or expired email verification token',
+          message: 'Invalid or expired password reset token',
         },
       ],
     })
   })
 
   test('respond with JSONAPI response', async ({ assert }) => {
-    const error = new E_INVALID_EMAIL_TOKEN()
+    const error = new E_INVALID_PASSWORD_TOKEN()
     const ctx = new HttpContextFactory().create()
 
     /**
@@ -76,15 +76,15 @@ test.group('Errors | E_INVALID_EMAIL_TOKEN', () => {
     assert.deepEqual(ctx.response.getBody(), {
       errors: [
         {
-          title: 'Invalid or expired email verification token',
-          code: 'E_INVALID_EMAIL_TOKEN',
+          title: 'Invalid or expired password reset token',
+          code: 'E_INVALID_PASSWORD_TOKEN',
         },
       ],
     })
   })
 
   test('translate error message using i18n', async ({ assert }) => {
-    const error = new E_INVALID_EMAIL_TOKEN()
+    const error = new E_INVALID_PASSWORD_TOKEN()
     const i18nManager = new I18nManagerFactory()
       .merge({
         config: {
@@ -94,7 +94,7 @@ test.group('Errors | E_INVALID_EMAIL_TOKEN', () => {
                 async load() {
                   return {
                     en: {
-                      'errors.E_INVALID_EMAIL_TOKEN': 'Invalid token',
+                      'errors.E_INVALID_PASSWORD_TOKEN': 'Invalid token',
                     },
                   }
                 },

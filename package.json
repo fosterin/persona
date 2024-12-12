@@ -18,7 +18,8 @@
   "exports": {
     ".": "./build/index.js",
     "./types": "./build/src/types.js",
-    "./email_verification": "./build/src/email_verification/main.js"
+    "./email_management": "./build/src/email_management/main.js",
+    "./password_management": "./build/src/password_management/main.js"
   },
   "scripts": {
     "clean": "del-cli build",

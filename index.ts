@@ -8,4 +8,3 @@
  */
 
 export { configure } from './configure.js'
-export * as errors from './src/errors.js'

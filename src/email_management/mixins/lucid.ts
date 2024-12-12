@@ -13,7 +13,7 @@ import stringHelpers from '@adonisjs/core/helpers/string'
 import { RuntimeException } from '@adonisjs/core/exceptions'
 import type { NormalizeConstructor } from '@adonisjs/core/types/helpers'
 
-import { E_INVALID_EMAIL_TOKEN } from '../../errors.js'
+import { E_INVALID_EMAIL_TOKEN } from '../errors.js'
 import { DbEmailTokensProvider } from '../token_providers/db.js'
 import { EmailVerificationToken } from '../email_verification_token.js'
 
@@ -45,9 +45,7 @@ export function withEmailManagement() {
           throw new E_INVALID_EMAIL_TOKEN()
         }
 
-        const transaction = await this.transaction()
-
-        try {
+        return this.transaction(async (trx) => {
           /**
            * Check if any other user is using the provided
            * email as the primary email on their account.
@@ -55,7 +53,7 @@ export function withEmailManagement() {
            * If yes, we cannot overwrite their email address.
            */
           const otherUserWithSameEmail = await this.query({
-            client: transaction,
+            client: trx,
           })
             .where('email', token.email)
             .whereNot(this.primaryKey, String(token.tokenableId))
@@ -70,7 +68,7 @@ export function withEmailManagement() {
            * the email address for which the token was generated.
            */
           const user = await this.query({
-            client: transaction,
+            client: trx,
           })
             .where(this.primaryKey, String(token.tokenableId))
             .where('unverifiedEmail', token.email)
@@ -85,13 +83,8 @@ export function withEmailManagement() {
            * Update user email address
            */
           await user.switchEmail(token.email).save()
-          await transaction.commit()
           return user
-        } catch (error) {
-          await transaction.rollback()
-          Error.captureStackTrace(error)
-          throw error
-        }
+        })
       }
 
       /**

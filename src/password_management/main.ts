@@ -8,6 +8,6 @@
  */
 
 export * as errors from './errors.js'
-export { withEmailManagement } from './mixins/lucid.js'
-export { DbEmailTokensProvider } from './token_providers/db.js'
-export { EmailVerificationToken } from './email_verification_token.js'
+export { withPasswordManagement } from './mixins/lucid.js'
+export { PasswordResetToken } from './password_reset_token.js'
+export { DbPasswordTokensProvider } from './token_providers/db.js'
