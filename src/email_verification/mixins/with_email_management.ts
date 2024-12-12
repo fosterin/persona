@@ -25,18 +25,18 @@ import { EmailVerificationToken } from '../email_verification_token.js'
  */
 export function withEmailManagement() {
   return <Model extends NormalizeConstructor<typeof BaseModel>>(superclass: Model) => {
-    class UserWithEmailManagement extends superclass {
+    class UserWithManagedEmails extends superclass {
       /**
        * The tokens provider to use for creating and verifying email
        * tokens
        */
-      declare static emailVerificationTokens: EmailTokensProvider<typeof UserWithEmailManagement>
+      declare static emailVerificationTokens: EmailTokensProvider<typeof UserWithManagedEmails>
 
       /**
        * Verifies the user email address by verifying the
        * token
        */
-      static async verifyEmail<TokenableModel extends typeof UserWithEmailManagement>(
+      static async verifyEmail<TokenableModel extends typeof UserWithManagedEmails>(
         this: TokenableModel,
         tokenValue: string
       ): Promise<InstanceType<TokenableModel>> {
@@ -155,8 +155,8 @@ export function withEmailManagement() {
         shouldThrottle?: boolean,
         throttleDuration: number | string = 60
       ): Promise<EmailVerificationToken | null> {
-        const model = this.constructor as typeof UserWithEmailManagement
-        const self = this as InstanceType<typeof UserWithEmailManagement>
+        const model = this.constructor as typeof UserWithManagedEmails
+        const self = this as InstanceType<typeof UserWithManagedEmails>
 
         /**
          * Ensure the unverified email property exists before creating
@@ -201,8 +201,8 @@ export function withEmailManagement() {
        * Deletes all email verification tokens for the user
        */
       clearEmailVerificationTokens(): Promise<number> {
-        const model = this.constructor as typeof UserWithEmailManagement
-        const self = this as InstanceType<typeof UserWithEmailManagement>
+        const model = this.constructor as typeof UserWithManagedEmails
+        const self = this as InstanceType<typeof UserWithManagedEmails>
         return model.emailVerificationTokens.deleteAll(self)
       }
 
@@ -264,6 +264,6 @@ export function withEmailManagement() {
       }
     }
 
-    return UserWithEmailManagement
+    return UserWithManagedEmails
   }
 }
