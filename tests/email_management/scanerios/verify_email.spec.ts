@@ -8,7 +8,7 @@
  */
 
 import { test } from '@japa/runner'
-import { createApp, createDatabase, createTables } from '../helpers.js'
+import { createApp, createDatabase, createTables } from '../../helpers.js'
 
 const { models, actions } = createApp()
 

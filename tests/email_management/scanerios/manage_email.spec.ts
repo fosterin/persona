@@ -8,8 +8,8 @@
  */
 
 import { test } from '@japa/runner'
-import { createApp, createDatabase, createTables } from '../helpers.js'
-import { EmailVerificationToken } from '../../src/email_management/email_verification_token.js'
+import { createApp, createDatabase, createTables } from '../../helpers.js'
+import { EmailVerificationToken } from '../../../src/email_management/email_verification_token.js'
 
 const { models, actions } = createApp()
 

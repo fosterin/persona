@@ -11,9 +11,9 @@ import { test } from '@japa/runner'
 import { compose } from '@adonisjs/core/helpers'
 import { BaseModel, column } from '@adonisjs/lucid/orm'
 
-import { createDatabase, createTables, timeTravel } from '../helpers.js'
-import { EmailVerificationToken } from '../../src/email_management/email_verification_token.js'
-import { withEmailManagement } from '../../src/email_management/mixins/lucid.js'
+import { createDatabase, createTables, timeTravel } from '../../helpers.js'
+import { EmailVerificationToken } from '../../../src/email_management/email_verification_token.js'
+import { withEmailManagement } from '../../../src/email_management/mixins/lucid.js'
 
 test.group('With email management | createToken', () => {
   test('generate email verification token for the user', async ({ assert }) => {
@@ -139,7 +139,7 @@ test.group('With email management | createToken', () => {
     assert.isNull(token1)
   })
 
-  test('fresh token when throttle window has lapsed', async ({ assert }) => {
+  test('create fresh token when throttle window has lapsed', async ({ assert }) => {
     const db = await createDatabase()
     await createTables(db)
 
