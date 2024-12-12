@@ -10,15 +10,11 @@
 import { type Secret, VerificationToken } from '@adonisjs/core/helpers'
 
 /**
- * EmailVerificationToken represents an opaque token that can be
- * used to verify an email address of the user.
+ * PasswordResetToken represents an opaque token that can be
+ * used to perform a password reset without knowing the
+ * existing password
  */
-export class EmailVerificationToken extends VerificationToken {
-  /**
-   * The email address for which the token was generated.
-   */
-  email: string
-
+export class PasswordResetToken extends VerificationToken {
   /**
    * Date/time when the token instance was created
    */
@@ -27,7 +23,6 @@ export class EmailVerificationToken extends VerificationToken {
   constructor(attributes: {
     identifier: string | number | BigInt
     tokenableId: string | number | BigInt
-    email: string
     hash: string
     createdAt: Date
     expiresAt: Date
@@ -37,7 +32,6 @@ export class EmailVerificationToken extends VerificationToken {
     this.identifier = attributes.identifier
     this.tokenableId = attributes.tokenableId
     this.hash = attributes.hash
-    this.email = attributes.email
     this.createdAt = attributes.createdAt
     this.expiresAt = attributes.expiresAt
 
