@@ -48,7 +48,7 @@ export const E_INVALID_EMAIL_TOKEN = class extends Exception {
       case 'html':
       case null:
         if (ctx.session) {
-          ctx.session.flash('email_verification_error', message)
+          ctx.session.flashErrors({ [error.code!]: message })
           ctx.response.redirect('back', true)
         } else {
           ctx.response.status(error.status).send(message)

@@ -25,7 +25,9 @@ test.group('Errors | E_INVALID_EMAIL_TOKEN', () => {
     })
 
     assert.deepEqual(ctx.session.responseFlashMessages.all(), {
-      email_verification_error: 'Invalid or expired email verification token',
+      errorsBag: {
+        E_INVALID_EMAIL_TOKEN: 'Invalid or expired email verification token',
+      },
     })
     assert.equal(ctx.response.getHeader('location'), '/')
   })

@@ -25,7 +25,9 @@ test.group('Errors | E_INVALID_PASSWORD_TOKEN', () => {
     })
 
     assert.deepEqual(ctx.session.responseFlashMessages.all(), {
-      email_verification_error: 'Invalid or expired password reset token',
+      errorsBag: {
+        E_INVALID_PASSWORD_TOKEN: 'Invalid or expired password reset token',
+      },
     })
     assert.equal(ctx.response.getHeader('location'), '/')
   })
